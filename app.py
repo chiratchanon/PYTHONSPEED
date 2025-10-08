@@ -12,7 +12,7 @@ char = pygame.image.load('Images/character.png')
 
 Running = True #Running the game
 while Running: #Looping the game
-    #
+    #       
     for events in pygame.event.get():
         if events.type == pygame.QUIT:
             Running = False
