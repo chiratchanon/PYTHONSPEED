@@ -1,0 +1,24 @@
+Connection: close
+Content-Length: 4035
+Server: GitHub.com
+Content-Type: audio/ogg
+x-origin-cache: HIT
+Last-Modified: Wed, 30 Jul 2025 00:35:46 GMT
+Access-Control-Allow-Origin: *
+Strict-Transport-Security: max-age=31556952
+ETag: "688968e2-fc3"
+expires: Thu, 30 Oct 2025 03:51:00 GMT
+Cache-Control: max-age=600
+x-proxy-cache: MISS
+X-GitHub-Request-Id: A6F8:2BDB49:3B2CC5:40BED9:6902DE4B
+Accept-Ranges: bytes
+Age: 0
+Date: Thu, 30 Oct 2025 06:11:07 GMT
+Via: 1.1 varnish
+X-Served-By: cache-bkk2310022-BKK
+X-Cache: HIT
+X-Cache-Hits: 0
+X-Timer: S1761804667.367813,VS0,VE301
+Vary: Accept-Encoding
+X-Fastly-Request-ID: 5fc5b09f3a1e139dcad5c5a1cdaa3fc1156e9416
+
