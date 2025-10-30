@@ -1,8 +1,7 @@
-import pygame, sys, random, asyncio
+import pygame, random, asyncio
 
 #SETUP
-pygame.init() # Initialize pygame
-# clock = pygame.time.Clock() # No longer needed for the web version
+pygame.init()
 
 # Screen
 screen_width, screen_height = 800, 600
@@ -20,19 +19,26 @@ class GameState:
 
 current_state = GameState.MAIN_MENU
 
+Background = ["GRASS_PLAIN", "FOREST"]
+current_place = Background[1]
+
 # -- Asset --
 # NOTE: Make sure your asset paths (Images/, SFXs/, etc.) are correct!
-background_image = pygame.image.load("Images/Background.png").convert_alpha()
+GRASS_PLAIN_SURFACE = pygame.image.load("Images/Backgrounds/Grass_Plain.png").convert_alpha()
+FOREST_SURFACE = pygame.image.load("Images/Backgrounds/FOREST.jpg").convert_alpha()
+
 title_image = pygame.image.load("Images/Title.png").convert_alpha()
 button_surface = pygame.image.load("Images/Button.png").convert_alpha()
 mute_surface = pygame.image.load("Images/Mute.png").convert_alpha()
 unmute_surface = pygame.image.load("Images/Unmute.png").convert_alpha()
 
 # Scale assets
-background_image = pygame.transform.scale(background_image, (screen_width, screen_height))
+GRASS_PLAIN_IMAGE = pygame.transform.scale(GRASS_PLAIN_SURFACE, (screen_width, screen_height))
+FOREST_IMAGE = pygame.transform.scale(FOREST_SURFACE, (screen_width, screen_height))
+
 title_image = pygame.transform.scale(title_image, (350, 300))
 button_surface = pygame.transform.scale(button_surface, (150, 70))
-mute_surface  = pygame.transform.scale(mute_surface, (30, 30))
+mute_surface  = pygame.transform.scale(mute_surface, (25, 25))
 unmute_surface  = pygame.transform.scale(unmute_surface, (30, 30))
 
 # BGMs
@@ -42,6 +48,7 @@ BGM = pygame.mixer.music.set_volume(0.5)
 BGM = pygame.mixer.music.play(loops=-1)
 
 # SFX
+# Main SFXs
 click_sound = pygame.mixer.Sound("SFXs/Click.ogg")
 fail_sound = pygame.mixer.Sound("SFXs/Fail.ogg")
 wrong_sound = pygame.mixer.Sound("SFXs/Wrong.ogg")
@@ -49,6 +56,10 @@ click_sound.set_volume(.25)
 fail_sound.set_volume(.25)
 wrong_sound.set_volume(.05)
 
+#KeyPress SFXs
+
+
+#COLOURs
 COLOR_WHITE = (255, 255, 255)
 COLOR_BLACK = (0, 0, 0)
 COLOR_GREEN = (50, 255, 50)
@@ -59,11 +70,6 @@ COLOR_ACTIVE_INPUT = pygame.Color('dodgerblue2')
 COLOR_INACTIVE_INPUT = pygame.Color('lightskyblue3')
 
 # --- FONT LOADING CHANGED ---
-# You can't use SysFont in the browser.
-# You must load a font file (like .ttf or .otf)
-# 1. Create a folder (e.g., "Fonts")
-# 2. Add a font file (e.g., "ComicNeue-Regular.ttf")
-# 3. Update the path below to match your file.
 try:
     # Update this path to your font file
     font_path = "Fonts/ComicNeue-Regular.ttf" 
@@ -112,17 +118,17 @@ play_button = Button(button_surface, screen_width / 2, 350, "PLAY", COLOR_WHITE,
 setting_button = Button(button_surface, screen_width / 2, 425, "SETTING", COLOR_WHITE, COLOR_GREEN, font=main_font)
 quit_button = Button(button_surface, screen_width / 2, 500, "QUIT", COLOR_WHITE, COLOR_RED, font=main_font)
 
-easy_button = Button(button_surface, screen_width / 2, 350, "EASY", COLOR_WHITE, COLOR_GREEN, font=main_font)
-medium_button = Button(button_surface, screen_width / 2, 425, "MEDIUM", COLOR_WHITE, COLOR_YELLOW, font=main_font)
-hard_button = Button(button_surface, screen_width / 2, 500, "HARD", COLOR_WHITE, COLOR_RED, font=main_font)
+easy_button = Button(button_surface, screen_width / 2, 250, "EASY", COLOR_WHITE, COLOR_GREEN, font=main_font)
+medium_button = Button(button_surface, screen_width / 2, 325, "MEDIUM", COLOR_WHITE, COLOR_YELLOW, font=main_font)
+hard_button = Button(button_surface, screen_width / 2, 400, "HARD", COLOR_WHITE, COLOR_RED, font=main_font)
 
 retry_button = Button(button_surface, screen_width / 2, 325, "RETRY", COLOR_WHITE, COLOR_GREEN, font=main_font)
 menu_button = Button(button_surface, screen_width / 2, 400, "MENU", COLOR_WHITE, COLOR_GREEN, font=main_font)
 
 return_button = Button(button_surface, 120, 550, "RETURN", COLOR_RED, COLOR_RED, font=main_font)
 
-mute_button = Button(mute_surface, 750, 550, "", COLOR_WHITE, COLOR_GREEN, font=main_font)
-unmute_button = Button(unmute_surface, 750, 550, "", COLOR_WHITE, COLOR_GREEN, font=main_font)
+mute_button = Button(mute_surface, 755, 565, "", COLOR_WHITE, COLOR_GREEN, font=main_font)
+unmute_button = Button(unmute_surface, 755, 565, "", COLOR_WHITE, COLOR_GREEN, font=main_font)
 
 #Words
 easy_words = ["def()", "sum()", "print()", "True", "False", "if", "elif", "else", "and", "or", "continue", "break"]
@@ -164,12 +170,10 @@ def start_new_game(difficulty):
     current_word_start_time = pygame.time.get_ticks()
     current_state = GameState.PLAYING
 
-
 # --- MAIN ASYNC LOOP ---
-# This is the new structure for the web
 async def main():
     # Declare all variables from the *outer* scope that this loop *changes*
-    global running, Mute, current_state, mouse_pos
+    global running, Mute, current_state, mouse_pos, current_place
     global current_word, score, lives, input_text, current_word_start_time, BGM
 
     running = True
@@ -178,7 +182,9 @@ async def main():
 
     while running:
         mouse_pos = pygame.mouse.get_pos()
-        display_screen.blit(background_image, (0, 0))
+        if current_state != GameState.PLAYING:
+            display_screen.blit(GRASS_PLAIN_IMAGE, (0, 0))
+
         if Mute == False:
             BGM = pygame.mixer.music.set_volume(0.5)
             unmute_button.update(display_screen)
@@ -213,10 +219,13 @@ async def main():
                 elif current_state == GameState.DIFFICULTY_SELECT:
                     if easy_button.check_for_input(mouse_pos):
                         start_new_game("EASY")
+                        current_place = random.choice(Background)
                     if medium_button.check_for_input(mouse_pos):
                         start_new_game("MEDIUM")
+                        current_place = random.choice(Background)
                     if hard_button.check_for_input(mouse_pos):
                         start_new_game("HARD")
+                        current_place = random.choice(Background)
                     if return_button.check_for_input(mouse_pos):
                         current_state = GameState.MAIN_MENU
 
@@ -226,6 +235,7 @@ async def main():
                     if menu_button.check_for_input(mouse_pos):
                         current_state = GameState.MAIN_MENU
 
+            print(current_place)    
             if current_state == GameState.PLAYING:
                 if event.type == pygame.KEYDOWN:
                     click_sound.play()
@@ -248,6 +258,11 @@ async def main():
         
         # --- Game Logic & State Updates ---
         if current_state == GameState.PLAYING:
+            if current_place == "GRASS_PLAIN":
+                display_screen.blit(GRASS_PLAIN_IMAGE, (0, 0))
+            elif current_place == "FOREST":
+                display_screen.blit(FOREST_IMAGE, (0, 0))
+    
             elapsed_time = (pygame.time.get_ticks() - current_word_start_time) / 1000
             if elapsed_time > word_time_limit:
                 fail_sound.play()
@@ -282,6 +297,11 @@ async def main():
                 button.update(display_screen)
 
         elif current_state == GameState.GAME_OVER:
+            if current_place == "GRASS_PLAIN":
+                display_screen.blit(GRASS_PLAIN_IMAGE, (0, 0))
+            elif current_place == "FOREST":
+                display_screen.blit(FOREST_IMAGE, (0, 0))
+
             game_over_text = title_font.render("GAME OVER", True, COLOR_RED)
             score_text = main_font.render(f"Final Score: {score}", True, COLOR_WHITE)
             game_over_rect = game_over_text.get_rect(center=(screen_width/2, 150))
